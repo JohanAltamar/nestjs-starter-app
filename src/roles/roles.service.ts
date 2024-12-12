@@ -62,8 +62,10 @@ export class RolesService {
     return `This action updates a #${id} role`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} role`;
+  async remove(id: string) {
+    const role = await this.findOne(id);
+
+    await this.roleRepository.remove(role);
   }
 
   private handleDBExceptions = (error) => {
