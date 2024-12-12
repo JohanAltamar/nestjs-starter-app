@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -49,8 +50,12 @@ export class RolesService {
     return roles;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} role`;
+  async findOne(id: string) {
+    const role = await this.roleRepository.findOneBy({ id });
+
+    if (!role) throw new NotFoundException(`Role with "${id}" not found`);
+
+    return role;
   }
 
   update(id: number, updateRoleDto: UpdateRoleDto) {
