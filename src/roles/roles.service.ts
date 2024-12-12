@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 // DTOs
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 
@@ -23,6 +24,8 @@ export class RolesService {
     private readonly roleRepository: Repository<Role>,
   ) {}
 
+  //TODO: User must be SYS_ADMIN to perform the CRUD operations
+
   async create(createRoleDto: CreateRoleDto) {
     try {
       const newRole = this.roleRepository.create(createRoleDto);
@@ -35,8 +38,15 @@ export class RolesService {
     }
   }
 
-  findAll() {
-    return `This action returns all roles`;
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDto;
+    const roles = await this.roleRepository.find({
+      skip: offset,
+      take: limit,
+      order: { name: 'asc' },
+    });
+
+    return roles;
   }
 
   findOne(id: number) {

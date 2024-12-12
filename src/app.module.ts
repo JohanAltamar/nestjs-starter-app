@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Modules
 import { RolesModule } from './roles/roles.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { RolesModule } from './roles/roles.module';
       synchronize: process.env.NODE_ENV === 'development',
     }),
     RolesModule,
+    CommonModule,
   ],
 })
 export class AppModule {}
