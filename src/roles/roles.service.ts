@@ -95,7 +95,7 @@ export class RolesService {
 
     await this.roleRepository.save(roleToUpdate);
 
-    return this.findOne(id);
+    return await this.findOne(id);
   }
 
   async remove(id: string) {

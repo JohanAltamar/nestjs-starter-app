@@ -55,8 +55,18 @@ export class PermissionsService {
     return permission;
   }
 
-  update(id: number, updatePermissionDto: UpdatePermissionDto) {
-    return `This action updates a #${id} permission`;
+  async update(id: string, updatePermissionDto: UpdatePermissionDto) {
+    const permissionToUpdate = await this.permissionRepository.preload({
+      id,
+      ...updatePermissionDto,
+    });
+
+    if (!permissionToUpdate)
+      throw new NotFoundException(`Permission with id ${id} not found`);
+
+    await this.permissionRepository.save(permissionToUpdate);
+
+    return await this.findOne(id);
   }
 
   async remove(id: string) {
