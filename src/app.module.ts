@@ -3,8 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Modules
-import { RolesModule } from './roles/roles.module';
 import { CommonModule } from './common/common.module';
+import { PermissionsModule } from './permissions/permissions.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -19,8 +20,9 @@ import { CommonModule } from './common/common.module';
       autoLoadEntities: true,
       synchronize: process.env.NODE_ENV === 'development',
     }),
-    RolesModule,
     CommonModule,
+    PermissionsModule,
+    RolesModule,
   ],
 })
 export class AppModule {}
