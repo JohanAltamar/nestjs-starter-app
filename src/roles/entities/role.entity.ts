@@ -1,4 +1,14 @@
-import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+
+// Entities
+import { Permission } from 'src/permissions/entities/permission.entity';
 
 @Entity({ name: 'roles' })
 export class Role {
@@ -10,6 +20,13 @@ export class Role {
 
   @Column('text', { nullable: true })
   description: string;
+
+  @ManyToMany(() => Permission, (permission) => permission.roles, {
+    cascade: true,
+    eager: true,
+  })
+  @JoinTable({ name: 'roles_permissions_relations' })
+  permissions?: Permission[];
 
   @BeforeInsert()
   beforeInsertRole() {

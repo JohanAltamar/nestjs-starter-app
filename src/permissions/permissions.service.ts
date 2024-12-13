@@ -25,6 +25,8 @@ export class PermissionsService {
     private readonly permissionRepository: Repository<Permission>,
   ) {}
 
+  //TODO: User must be SYS_ADMIN to perform the CRUD operations
+
   async create(createPermissionDto: CreatePermissionDto) {
     try {
       const newPermission =

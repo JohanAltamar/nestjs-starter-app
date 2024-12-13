@@ -1,4 +1,13 @@
-import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+
+// Entities
+import { Role } from 'src/roles/entities/role.entity';
 
 @Entity({ name: 'permissions' })
 export class Permission {
@@ -10,6 +19,11 @@ export class Permission {
 
   @Column('text', { nullable: true })
   description: string;
+
+  @ManyToMany(() => Role, (role) => role.permissions, {
+    onDelete: 'CASCADE',
+  })
+  roles?: Role[];
 
   @BeforeInsert()
   beforeInsertPermission() {
