@@ -73,8 +73,29 @@ export class RolesService {
     return role;
   }
 
-  update(id: number, updateRoleDto: UpdateRoleDto) {
-    return `This action updates a #${id} role`;
+  async update(id: string, updateRoleDto: UpdateRoleDto) {
+    const { permissions, ...infoToUpdate } = updateRoleDto;
+
+    const roleToUpdate = await this.roleRepository.preload({
+      id,
+      ...infoToUpdate,
+    });
+
+    if (!roleToUpdate)
+      throw new NotFoundException(`Role with id ${id} not found`);
+
+    if (permissions.length > 0) {
+      const newPermissions = await Promise.all(
+        permissions.map((permission) =>
+          this.permissionsService.findOne(permission),
+        ),
+      );
+      roleToUpdate.permissions = newPermissions;
+    }
+
+    await this.roleRepository.save(roleToUpdate);
+
+    return this.findOne(id);
   }
 
   async remove(id: string) {
