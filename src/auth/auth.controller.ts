@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 
 // DTOs
-import { CreateUserDto, UpdateUserDto } from './dto';
+import { CreateUserDto, LoginUserDto, UpdateUserDto } from './dto';
 
 // Providers
 import { AuthService } from './auth.service';
@@ -19,8 +19,13 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.authService.create(createUserDto);
+  createUser(@Body() createUserDto: CreateUserDto) {
+    return this.authService.createUser(createUserDto);
+  }
+
+  @Post('login')
+  loginUser(@Body() loginUserDto: LoginUserDto) {
+    return this.authService.loginUser(loginUserDto);
   }
 
   @Get()
