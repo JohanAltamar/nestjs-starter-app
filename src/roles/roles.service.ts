@@ -16,6 +16,9 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 // Entities
 import { Role } from './entities/role.entity';
 
+// Providers
+import { PermissionsService } from 'src/permissions/permissions.service';
+
 @Injectable()
 export class RolesService {
   private readonly logger = new Logger('RoleService');
@@ -23,14 +26,26 @@ export class RolesService {
   constructor(
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
+    private readonly permissionsService: PermissionsService,
   ) {}
 
   //TODO: User must be SYS_ADMIN to perform the CRUD operations
 
   async create(createRoleDto: CreateRoleDto) {
-    try {
-      const newRole = this.roleRepository.create(createRoleDto);
+    const { permissions = [], ...roleDetails } = createRoleDto;
 
+    const existingPermissions = await Promise.all(
+      permissions.map((permission) =>
+        this.permissionsService.findOne(permission),
+      ),
+    );
+
+    const newRole = this.roleRepository.create({
+      ...roleDetails,
+      permissions: existingPermissions,
+    });
+
+    try {
       await this.roleRepository.save(newRole);
 
       return newRole;

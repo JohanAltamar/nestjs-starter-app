@@ -14,7 +14,7 @@ export class Permission {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('text')
+  @Column('text', { unique: true })
   name: string;
 
   @Column('text', { nullable: true })

@@ -7,12 +7,15 @@ import { RolesController } from './roles.controller';
 // Entities
 import { Role } from './entities/role.entity';
 
+// Modules
+import { PermissionsModule } from 'src/permissions/permissions.module';
+
 // Providers
 import { RolesService } from './roles.service';
 
 @Module({
   controllers: [RolesController],
   providers: [RolesService],
-  imports: [TypeOrmModule.forFeature([Role])],
+  imports: [TypeOrmModule.forFeature([Role]), PermissionsModule],
 })
 export class RolesModule {}
