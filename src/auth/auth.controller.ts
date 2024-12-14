@@ -6,6 +6,8 @@ import { CreateUserDto, LoginUserDto } from './dto';
 
 // Providers
 import { AuthService } from './auth.service';
+import { GetUser } from './decorators/get-user.decorator';
+import { User } from './entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -23,10 +25,11 @@ export class AuthController {
 
   @Get('private')
   @UseGuards(AuthGuard())
-  testPrivateRoutes() {
+  testPrivateRoutes(@GetUser() user: User) {
     return {
       ok: true,
       message: 'Hello from private',
+      user,
     };
   }
 }
