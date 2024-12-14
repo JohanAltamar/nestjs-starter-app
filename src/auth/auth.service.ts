@@ -11,7 +11,7 @@ import { compareSync, hashSync } from 'bcrypt';
 import { Repository } from 'typeorm';
 
 // DTOs
-import { CreateUserDto, LoginUserDto, UpdateUserDto } from './dto';
+import { CreateUserDto, LoginUserDto } from './dto';
 
 // Entities
 import { User } from './entities/user.entity';
@@ -61,22 +61,6 @@ export class AuthService {
       throw new UnauthorizedException('Credentials not valid (password)');
 
     return { ...user, token: this.generateJwt({ email: user.email }) };
-  }
-
-  findAll() {
-    return `This action returns all auth`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
   }
 
   private generateJwt(payload: JwtPayload) {
