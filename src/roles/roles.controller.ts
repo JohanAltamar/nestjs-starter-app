@@ -32,9 +32,9 @@ export class RolesController {
     return this.rolesService.findAll(paginationDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.rolesService.findOne(id);
+  @Get(':term')
+  findOne(@Param('term') term: string) {
+    return this.rolesService.findOne(term);
   }
 
   @Patch(':id')

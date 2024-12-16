@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { validate as isUUID } from 'uuid';
 
 // DTOs
 import { PaginationDto } from 'src/common/dto/pagination.dto';
@@ -65,10 +66,28 @@ export class RolesService {
     return roles;
   }
 
-  async findOne(id: string) {
-    const role = await this.roleRepository.findOneBy({ id });
+  async findOne(term: string) {
+    let role: Role;
 
-    if (!role) throw new NotFoundException(`Role with "${id}" not found`);
+    if (isUUID(term)) {
+      role = await this.roleRepository.findOne({
+        where: { id: term },
+        select: { name: true, id: true },
+        relations: {
+          permissions: true,
+        },
+      });
+    } else {
+      role = await this.roleRepository.findOne({
+        where: { name: term },
+        select: { name: true, id: true },
+        relations: {
+          permissions: true,
+        },
+      });
+    }
+
+    if (!role) throw new NotFoundException(`Role with "${term}" not found`);
 
     return role;
   }
