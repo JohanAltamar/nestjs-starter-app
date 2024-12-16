@@ -1,4 +1,11 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  SetMetadata,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 // Decorators
@@ -7,9 +14,14 @@ import { GetUser, RawHeaders } from './decorators';
 // DTOs
 import { CreateUserDto, LoginUserDto } from './dto';
 
+// Entities
+import { User } from './entities/user.entity';
+
+// Guards
+import { UserPermissionGuard } from './guards/user-permission.guard';
+
 // Providers
 import { AuthService } from './auth.service';
-import { User } from './entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -38,6 +50,17 @@ export class AuthController {
       user,
       userEmail,
       rawHeaders,
+    };
+  }
+
+  @Get('private2')
+  @SetMetadata('permissions', ['CREATE_USER', 'UPDATE_USER'])
+  @UseGuards(AuthGuard(), UserPermissionGuard)
+  testPrivate2Route(@GetUser() user: User) {
+    return {
+      ok: true,
+      message: 'Hello from private 2',
+      user,
     };
   }
 }
