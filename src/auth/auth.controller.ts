@@ -62,10 +62,7 @@ export class AuthController {
   }
 
   @Get('private3')
-  @Auth({
-    // roles: [ValidRoles.user],
-    permissions: [ValidPermissions.create_user],
-  })
+  @Auth('permission', ValidPermissions.create_user)
   testPrivate3Route(@GetUser() user: User) {
     return {
       ok: true,
