@@ -19,7 +19,7 @@ export class User {
   @Column('text', { unique: true })
   email: string;
 
-  @Column('text', { select: false })
+  @Column('text', { select: false, nullable: true })
   password: string;
 
   @Column('text')
@@ -27,6 +27,9 @@ export class User {
 
   @Column('bool', { default: true })
   isActive: boolean;
+
+  @Column('text', { nullable: true })
+  provider: string;
 
   // TODO: roles relation;
   @ManyToMany(() => Role, (role) => role.users, { eager: true, cascade: true })

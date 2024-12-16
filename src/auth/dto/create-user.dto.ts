@@ -12,6 +12,7 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
+  @IsOptional()
   @IsString()
   @MinLength(6)
   @MaxLength(50)
@@ -28,4 +29,8 @@ export class CreateUserDto {
   @IsOptional()
   @IsArray({ each: true })
   roles: string[];
+
+  @IsOptional()
+  @IsString()
+  provider: string;
 }

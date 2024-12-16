@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Req,
+  Res,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 
 // Decorators
@@ -11,21 +20,25 @@ import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 
 // Guards
-import { UserPermissionGuard } from './guards/user-permission.guard';
+import { GoogleOauthGuard, UserPermissionGuard } from './guards';
 
 // Providers
 import { AuthService } from './auth.service';
 
 // Types
+import type { Response } from 'express';
 import { ValidPermissions } from './interfaces';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post('register')
   createUser(@Body() createUserDto: CreateUserDto) {
-    return this.authService.createUser(createUserDto);
+    return this.authService.createUser(createUserDto, false);
   }
 
   @Post('login')
@@ -69,5 +82,18 @@ export class AuthController {
       message: 'Hello from private 3',
       user,
     };
+  }
+
+  @Get('google/callback')
+  @UseGuards(GoogleOauthGuard)
+  async googleAuthCallback(@Req() req, @Res() res: Response) {
+    try {
+      const { token } = await this.authService.oAuthLogin(req.user);
+      res.redirect(
+        `${this.configService.get('FRONTEND_URL')}/oauth?token=${token}`,
+      );
+    } catch (err) {
+      res.status(500).send({ success: false, message: err.message });
+    }
   }
 }

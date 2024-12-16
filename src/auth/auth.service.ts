@@ -35,19 +35,24 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async createUser(createUserDto: CreateUserDto) {
+  async createUser(createUserDto: CreateUserDto, fromProvider: boolean) {
     const { password, roles = ['USER'], ...userDetails } = createUserDto;
 
     const rolesToAdd = await Promise.all(
       roles.map((role) => this.roleService.findOne(role)),
     );
 
+    if (!fromProvider && !password)
+      throw new BadRequestException('Password is required');
+
     try {
       const newUser = this.userRepository.create({
         ...userDetails,
-        password: hashSync(password, 10),
+        password: !password ? null : hashSync(password, 10),
         roles: rolesToAdd,
       });
+
+      if (fromProvider) delete newUser.password;
 
       await this.userRepository.save(newUser);
 
@@ -79,6 +84,22 @@ export class AuthService {
     return {
       ...user,
       ...getUserRolesAndPermissions(user),
+      token: this.generateJwt({ id: user.id }),
+    };
+  }
+
+  async oAuthLogin(user) {
+    if (!user) {
+      throw new InternalServerErrorException('Google user not found!!!');
+    }
+
+    if (!user.id) {
+      const newUser = await this.createUser(user, true);
+      user = { ...user, ...newUser };
+    }
+
+    return {
+      ...user,
       token: this.generateJwt({ id: user.id }),
     };
   }

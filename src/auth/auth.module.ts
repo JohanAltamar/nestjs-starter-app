@@ -15,11 +15,11 @@ import { RolesModule } from 'src/roles/roles.module';
 
 // Providers
 import { AuthService } from './auth.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { GoogleStrategy, JwtStrategy } from './strategies';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, GoogleStrategy],
   imports: [
     ConfigModule,
     TypeOrmModule.forFeature([User]),
@@ -43,6 +43,12 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     //   },
     // }),
   ],
-  exports: [TypeOrmModule, JwtStrategy, PassportModule, JwtModule],
+  exports: [
+    TypeOrmModule,
+    GoogleStrategy,
+    JwtStrategy,
+    PassportModule,
+    JwtModule,
+  ],
 })
 export class AuthModule {}
