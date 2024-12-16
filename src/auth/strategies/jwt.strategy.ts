@@ -1,11 +1,18 @@
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { User } from '../entities/user.entity';
-import { type JwtPayload } from '../interfaces/jwt-payload.interface';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Repository } from 'typeorm';
+
+// Entities
+import { User } from '../entities/user.entity';
+
+// Helpers
+import { getUserRolesAndPermissions } from '../helpers/get-user-roles-and-permissions';
+
+// Types
+import type { JwtPayload, UserResponse } from '../interfaces';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -19,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload): Promise<User> {
+  async validate(payload: JwtPayload): Promise<UserResponse> {
     const { id } = payload;
 
     const user = await this.userRepository.findOneBy({ id });
@@ -31,6 +38,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         'User is inactive, contact the app admin',
       );
 
-    return user;
+    return { ...user, ...getUserRolesAndPermissions(user) };
   }
 }
