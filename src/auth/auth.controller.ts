@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 // Decorators
-import { GetUser, RawHeaders } from './decorators';
+import { Auth, GetUser, PermissionProtected, RawHeaders } from './decorators';
 
 // DTOs
 import { CreateUserDto, LoginUserDto } from './dto';
@@ -15,7 +15,8 @@ import { UserPermissionGuard } from './guards/user-permission.guard';
 
 // Providers
 import { AuthService } from './auth.service';
-import { PermissionProtected } from './decorators/permission-protected/permission-protected.decorator';
+
+// Types
 import { ValidPermissions } from './interfaces';
 
 @Controller('auth')
@@ -56,6 +57,19 @@ export class AuthController {
     return {
       ok: true,
       message: 'Hello from private 2',
+      user,
+    };
+  }
+
+  @Get('private3')
+  @Auth({
+    // roles: [ValidRoles.user],
+    permissions: [ValidPermissions.create_user],
+  })
+  testPrivate3Route(@GetUser() user: User) {
+    return {
+      ok: true,
+      message: 'Hello from private 3',
       user,
     };
   }

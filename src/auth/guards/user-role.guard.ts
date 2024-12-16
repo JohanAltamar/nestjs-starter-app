@@ -11,19 +11,18 @@ import { Observable } from 'rxjs';
 // Entities
 import { UserResponse } from '../interfaces/user-response.interface';
 
-import { META_PERMISSIONS } from '../decorators/permission-protected.decorator';
+import { META_ROLES } from '../decorators/role-protected.decorator';
 
 @Injectable()
-export class UserPermissionGuard implements CanActivate {
+export class UserRoleGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const requiredPermissions =
-      this.reflector.get<string[]>(META_PERMISSIONS, context.getHandler()) ??
-      [];
+    const requiredRoles =
+      this.reflector.get<string[]>(META_ROLES, context.getHandler()) ?? [];
 
-    if (!requiredPermissions.length) return true;
+    if (!requiredRoles.length) return true;
 
     const request = context.switchToHttp().getRequest();
     const user: UserResponse = request.user;
@@ -31,12 +30,12 @@ export class UserPermissionGuard implements CanActivate {
     if (!user)
       throw new InternalServerErrorException('User not found (request)');
 
-    for (const permission of user.permissions) {
-      if (requiredPermissions.includes(permission)) return true;
+    for (const role of user.roles) {
+      if (requiredRoles.includes(role)) return true;
     }
 
     throw new ForbiddenException(
-      `User ${user.fullName} need a valid permission: ${requiredPermissions}`,
+      `User ${user.fullName} need a valid role: ${requiredRoles}`,
     );
   }
 }
