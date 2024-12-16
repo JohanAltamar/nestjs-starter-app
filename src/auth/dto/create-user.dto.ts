@@ -1,5 +1,7 @@
 import {
+  IsArray,
   IsEmail,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -22,4 +24,8 @@ export class CreateUserDto {
   @IsString()
   @MinLength(1)
   fullName: string;
+
+  @IsOptional()
+  @IsArray({ each: true })
+  roles: string[];
 }

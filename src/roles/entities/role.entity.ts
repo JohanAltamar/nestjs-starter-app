@@ -9,6 +9,7 @@ import {
 
 // Entities
 import { Permission } from 'src/permissions/entities/permission.entity';
+import { User } from 'src/auth/entities/user.entity';
 
 @Entity({ name: 'roles' })
 export class Role {
@@ -27,6 +28,11 @@ export class Role {
   })
   @JoinTable({ name: 'roles_permissions_relations' })
   permissions?: Permission[];
+
+  @ManyToMany(() => User, (user) => user.roles, {
+    onDelete: 'CASCADE',
+  })
+  users?: User[];
 
   @BeforeInsert()
   beforeInsertRole() {

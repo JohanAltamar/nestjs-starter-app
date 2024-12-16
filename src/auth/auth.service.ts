@@ -16,6 +16,12 @@ import { CreateUserDto, LoginUserDto } from './dto';
 // Entities
 import { User } from './entities/user.entity';
 
+// Helpers
+import { getUserRolesAndPermissions } from './helpers/get-user-roles-and-permissions';
+
+// Providers
+import { RolesService } from 'src/roles/roles.service';
+
 // Types
 import { type JwtPayload } from './interfaces/jwt-payload.interface';
 
@@ -25,23 +31,33 @@ export class AuthService {
 
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly roleService: RolesService,
     private readonly jwtService: JwtService,
   ) {}
 
   async createUser(createUserDto: CreateUserDto) {
-    try {
-      const { password, ...userDetails } = createUserDto;
+    const { password, roles = ['USER'], ...userDetails } = createUserDto;
 
+    const rolesToAdd = await Promise.all(
+      roles.map((role) => this.roleService.findOne(role)),
+    );
+
+    try {
       const newUser = this.userRepository.create({
         ...userDetails,
         password: hashSync(password, 10),
+        roles: rolesToAdd,
       });
 
       await this.userRepository.save(newUser);
 
       delete newUser.password;
 
-      return { ...newUser, token: this.generateJwt({ id: newUser.id }) };
+      return {
+        ...newUser,
+        ...getUserRolesAndPermissions(newUser),
+        token: this.generateJwt({ id: newUser.id }),
+      };
     } catch (error) {
       this.handleDBExceptions(error);
     }
@@ -60,7 +76,11 @@ export class AuthService {
     if (!compareSync(password, user.password))
       throw new UnauthorizedException('Credentials not valid (password)');
 
-    return { ...user, token: this.generateJwt({ id: user.id }) };
+    return {
+      ...user,
+      ...getUserRolesAndPermissions(user),
+      token: this.generateJwt({ id: user.id }),
+    };
   }
 
   private generateJwt(payload: JwtPayload) {

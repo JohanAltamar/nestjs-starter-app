@@ -3,8 +3,13 @@ import {
   BeforeUpdate,
   Column,
   Entity,
+  JoinTable,
+  ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+// Entities
+import { Role } from 'src/roles/entities/role.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -24,6 +29,9 @@ export class User {
   isActive: boolean;
 
   // TODO: roles relation;
+  @ManyToMany(() => Role, (role) => role.users, { eager: true, cascade: true })
+  @JoinTable({ name: 'users_roles_relations' })
+  roles: Role[];
 
   @BeforeInsert()
   checkFIeldsBeforeInsert() {

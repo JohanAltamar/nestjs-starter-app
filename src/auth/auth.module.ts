@@ -10,6 +10,9 @@ import { AuthController } from './auth.controller';
 // Entities
 import { User } from './entities/user.entity';
 
+// Modules
+import { RolesModule } from 'src/roles/roles.module';
+
 // Providers
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -32,6 +35,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
         },
       }),
     }),
+    RolesModule,
     // JwtModule.register({
     //   secret: process.env.JWT_SECRET,
     //   signOptions: {
