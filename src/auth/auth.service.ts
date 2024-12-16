@@ -57,11 +57,19 @@ export class AuthService {
       await this.userRepository.save(newUser);
 
       delete newUser.password;
+      delete newUser.isActive;
+
+      const { roles, permissions } = getUserRolesAndPermissions(newUser);
 
       return {
         ...newUser,
-        ...getUserRolesAndPermissions(newUser),
-        token: this.generateJwt({ id: newUser.id }),
+        roles,
+        permissions,
+        token: this.generateJwt({
+          ...newUser,
+          roles,
+          permissions,
+        }),
       };
     } catch (error) {
       this.handleDBExceptions(error);
@@ -81,10 +89,12 @@ export class AuthService {
     if (!compareSync(password, user.password))
       throw new UnauthorizedException('Credentials not valid (password)');
 
+    const { roles, permissions } = getUserRolesAndPermissions(user);
+
     return {
       ...user,
       ...getUserRolesAndPermissions(user),
-      token: this.generateJwt({ id: user.id }),
+      token: this.generateJwt({ ...user, roles, permissions }),
     };
   }
 
@@ -98,9 +108,12 @@ export class AuthService {
       user = { ...user, ...newUser };
     }
 
+    delete user.isActive;
+    delete user.token;
+
     return {
       ...user,
-      token: this.generateJwt({ id: user.id }),
+      token: this.generateJwt({ id: user.id, ...user }),
     };
   }
 
