@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  UseGuards,
-  SetMetadata,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 // Decorators
@@ -22,6 +15,8 @@ import { UserPermissionGuard } from './guards/user-permission.guard';
 
 // Providers
 import { AuthService } from './auth.service';
+import { PermissionProtected } from './decorators/permission-protected/permission-protected.decorator';
+import { ValidPermissions } from './interfaces';
 
 @Controller('auth')
 export class AuthController {
@@ -54,7 +49,8 @@ export class AuthController {
   }
 
   @Get('private2')
-  @SetMetadata('permissions', ['CREATE_USER', 'UPDATE_USER'])
+  // @SetMetadata('permissions', ['CREATE_USER', 'UPDATE_USER'])
+  @PermissionProtected(ValidPermissions.create_appointment)
   @UseGuards(AuthGuard(), UserPermissionGuard)
   testPrivate2Route(@GetUser() user: User) {
     return {

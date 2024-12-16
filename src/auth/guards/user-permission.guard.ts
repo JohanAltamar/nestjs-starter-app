@@ -11,6 +11,8 @@ import { Observable } from 'rxjs';
 // Entities
 import { UserResponse } from '../interfaces/user-response.interface';
 
+import { META_PERMISSIONS } from '../decorators/permission-protected/permission-protected.decorator';
+
 @Injectable()
 export class UserPermissionGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
@@ -18,7 +20,8 @@ export class UserPermissionGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const requiredPermissions =
-      this.reflector.get<string[]>('permissions', context.getHandler()) ?? [];
+      this.reflector.get<string[]>(META_PERMISSIONS, context.getHandler()) ??
+      [];
 
     if (!requiredPermissions.length) return true;
 
