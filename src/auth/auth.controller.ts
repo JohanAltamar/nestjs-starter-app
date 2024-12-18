@@ -88,9 +88,9 @@ export class AuthController {
   @UseGuards(GoogleOauthGuard)
   async googleAuthCallback(@Req() req, @Res() res: Response) {
     try {
-      const { token } = await this.authService.oAuthLogin(req.user);
+      const { access, refresh } = await this.authService.oAuthLogin(req.user);
       res.redirect(
-        `${this.configService.get('FRONTEND_URL')}/oauth?token=${token}`,
+        `${this.configService.get('FRONTEND_URL')}/oauth?access=${access}&refresh=${refresh}`,
       );
     } catch (err) {
       res.status(500).send({ success: false, message: err.message });

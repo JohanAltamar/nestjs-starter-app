@@ -65,7 +65,12 @@ export class AuthService {
         ...newUser,
         roles,
         permissions,
-        token: this.generateJwt({
+        access: this.generateJwt({
+          ...newUser,
+          roles,
+          permissions,
+        }),
+        refresh: this.generateJwt({
           ...newUser,
           roles,
           permissions,
@@ -89,12 +94,15 @@ export class AuthService {
     if (!compareSync(password, user.password))
       throw new UnauthorizedException('Credentials not valid (password)');
 
+    delete user.password;
+
     const { roles, permissions } = getUserRolesAndPermissions(user);
 
     return {
       ...user,
       ...getUserRolesAndPermissions(user),
-      token: this.generateJwt({ ...user, roles, permissions }),
+      access: this.generateJwt({ ...user, roles, permissions }),
+      refresh: this.generateJwt({ ...user, roles, permissions }),
     };
   }
 
@@ -113,7 +121,8 @@ export class AuthService {
 
     return {
       ...user,
-      token: this.generateJwt({ id: user.id, ...user }),
+      access: this.generateJwt({ id: user.id, ...user }),
+      refresh: this.generateJwt({ id: user.id, ...user }),
     };
   }
 
