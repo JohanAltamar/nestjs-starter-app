@@ -31,7 +31,6 @@ export class User {
   @Column('text', { nullable: true })
   provider: string;
 
-  // TODO: roles relation;
   @ManyToMany(() => Role, (role) => role.users, { eager: true, cascade: true })
   @JoinTable({ name: 'users_roles_relations' })
   roles: Role[];

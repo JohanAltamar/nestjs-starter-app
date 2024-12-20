@@ -1,5 +1,5 @@
 import { Permission } from 'src/permissions/entities/permission.entity';
-import { User } from 'src/auth/entities/user.entity';
+import { User } from 'src/users/entities/user.entity';
 
 export const getUserRolesAndPermissions = (user: User) => {
   const permissions: Permission[] = [];

@@ -9,7 +9,7 @@ import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 
 // Entities
-import { UserResponse } from '../interfaces/user-response.interface';
+import { UserResponse } from '../../users/interfaces/user-response.interface';
 
 import { META_PERMISSIONS } from '../decorators/permission-protected.decorator';
 

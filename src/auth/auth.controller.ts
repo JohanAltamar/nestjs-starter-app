@@ -14,10 +14,11 @@ import { AuthGuard } from '@nestjs/passport';
 import { Auth, GetUser, PermissionProtected, RawHeaders } from './decorators';
 
 // DTOs
-import { CreateUserDto, LoginUserDto } from './dto';
+import { CreateUserDto } from 'src/users/dto';
+import { LoginUserDto } from './dto';
 
 // Entities
-import { User } from './entities/user.entity';
+import { User } from 'src/users/entities/user.entity';
 
 // Guards
 import { GoogleOauthGuard, UserPermissionGuard } from './guards';

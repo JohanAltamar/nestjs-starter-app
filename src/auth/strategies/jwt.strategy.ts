@@ -6,10 +6,10 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Repository } from 'typeorm';
 
 // Entities
-import { User } from '../entities/user.entity';
+import { User } from 'src/users/entities/user.entity';
 
 // Helpers
-import { getUserRolesAndPermissions } from '../helpers/get-user-roles-and-permissions';
+import { getUserRolesAndPermissions } from '../../users/helpers/get-user-roles-and-permissions';
 
 // Types
 import type { JwtPayload, UserResponse } from '../interfaces';

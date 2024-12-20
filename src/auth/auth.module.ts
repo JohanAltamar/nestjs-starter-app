@@ -2,16 +2,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Controllers
 import { AuthController } from './auth.controller';
 
-// Entities
-import { User } from './entities/user.entity';
-
 // Modules
-import { RolesModule } from 'src/roles/roles.module';
+import { UsersModule } from 'src/users/users.module';
 
 // Providers
 import { AuthService } from './auth.service';
@@ -22,7 +18,6 @@ import { GoogleStrategy, JwtStrategy } from './strategies';
   providers: [AuthService, JwtStrategy, GoogleStrategy],
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([User]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -35,7 +30,7 @@ import { GoogleStrategy, JwtStrategy } from './strategies';
         },
       }),
     }),
-    RolesModule,
+    UsersModule,
     // JwtModule.register({
     //   secret: process.env.JWT_SECRET,
     //   signOptions: {
@@ -43,12 +38,6 @@ import { GoogleStrategy, JwtStrategy } from './strategies';
     //   },
     // }),
   ],
-  exports: [
-    TypeOrmModule,
-    GoogleStrategy,
-    JwtStrategy,
-    PassportModule,
-    JwtModule,
-  ],
+  exports: [GoogleStrategy, JwtStrategy, PassportModule, JwtModule],
 })
 export class AuthModule {}

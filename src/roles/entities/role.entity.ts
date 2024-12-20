@@ -9,7 +9,7 @@ import {
 
 // Entities
 import { Permission } from 'src/permissions/entities/permission.entity';
-import { User } from 'src/auth/entities/user.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Entity({ name: 'roles' })
 export class Role {
