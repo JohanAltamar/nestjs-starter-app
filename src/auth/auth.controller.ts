@@ -72,7 +72,7 @@ export class AuthController {
 
   @Get('private2')
   // @SetMetadata('permissions', ['CREATE_USER', 'UPDATE_USER'])
-  @PermissionProtected(ValidPermissions.create_appointment)
+  @PermissionProtected(ValidPermissions.view_permissions)
   @UseGuards(AuthGuard(), UserPermissionGuard)
   testPrivate2Route(@GetUser() user: User) {
     return {
@@ -83,7 +83,7 @@ export class AuthController {
   }
 
   @Get('private3')
-  @Auth('permission', ValidPermissions.create_user)
+  @Auth('permission', ValidPermissions.view_permissions)
   testPrivate3Route(@GetUser() user: User) {
     return {
       ok: true,
