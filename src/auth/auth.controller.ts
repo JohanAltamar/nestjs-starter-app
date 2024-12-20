@@ -6,6 +6,7 @@ import {
   UseGuards,
   Req,
   Res,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
@@ -45,6 +46,12 @@ export class AuthController {
   @Post('login')
   loginUser(@Body() loginUserDto: LoginUserDto) {
     return this.authService.loginUser(loginUserDto);
+  }
+
+  @Get('logout')
+  @Auth()
+  logout(@GetUser('id', ParseUUIDPipe) id: string) {
+    return this.authService.logout(id);
   }
 
   @Get('private')
@@ -89,9 +96,11 @@ export class AuthController {
   @UseGuards(GoogleOauthGuard)
   async googleAuthCallback(@Req() req, @Res() res: Response) {
     try {
-      const { access, refresh } = await this.authService.oAuthLogin(req.user);
+      const { accessToken, refreshToken } = await this.authService.oAuthLogin(
+        req.user,
+      );
       res.redirect(
-        `${this.configService.get('FRONTEND_URL')}/oauth?access=${access}&refresh=${refresh}`,
+        `${this.configService.get('FRONTEND_URL')}/oauth?access=${accessToken}&refresh=${refreshToken}`,
       );
     } catch (err) {
       res.status(500).send({ success: false, message: err.message });

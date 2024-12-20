@@ -64,7 +64,20 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    return `This action returns a #${id} user`;
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: {
+        email: true,
+        id: true,
+        fullName: true,
+        isActive: true,
+        refreshToken: true,
+      },
+    });
+
+    if (!user) throw new NotFoundException(`User with id ${id} not found`);
+
+    return { ...user, ...getUserRolesAndPermissions(user) };
   }
 
   async findOneByEmail(email: string) {
@@ -79,12 +92,30 @@ export class UsersService {
     return { ...user, ...getUserRolesAndPermissions(user) };
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    console.log({ updateUserDto });
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const { roles, ...userDetails } = updateUserDto;
+
+    const userToUpdate = await this.userRepository.preload({
+      id,
+      ...userDetails,
+    });
+
+    if (!userToUpdate)
+      throw new NotFoundException(`User with id ${id} not found`);
+
+    if (roles?.length > 0) {
+      const newRoles = await Promise.all(
+        roles.map((roleName) => this.roleService.findOne(roleName)),
+      );
+      userToUpdate.roles = newRoles;
+    }
+
+    await this.userRepository.save(userToUpdate);
+
+    return await this.findOne(userToUpdate.id);
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} user`;
   }
 

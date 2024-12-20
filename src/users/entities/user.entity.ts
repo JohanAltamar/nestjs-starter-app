@@ -29,6 +29,9 @@ export class User {
   isActive: boolean;
 
   @Column('text', { nullable: true })
+  refreshToken: string;
+
+  @Column('text', { nullable: true })
   provider: string;
 
   @ManyToMany(() => Role, (role) => role.users, { eager: true, cascade: true })

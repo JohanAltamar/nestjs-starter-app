@@ -4,8 +4,9 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { compareSync } from 'bcrypt';
+import { compareSync, hashSync } from 'bcrypt';
 
 // DTOs
 import { CreateUserDto } from 'src/users/dto';
@@ -24,15 +25,17 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async createUser(createUserDto: CreateUserDto, fromProvider: boolean) {
     const newUser = await this.usersService.create(createUserDto, fromProvider);
 
-    return {
-      access: this.generateJwt(newUser),
-      refresh: this.generateJwt(newUser),
-    };
+    const tokens = this.generateTokens(newUser);
+
+    await this.updateRefreshToken(newUser.id, tokens.refreshToken);
+
+    return tokens;
   }
 
   async loginUser(loginUserDto: LoginUserDto) {
@@ -47,10 +50,11 @@ export class AuthService {
 
     delete user.password;
 
-    return {
-      access: this.generateJwt(user),
-      refresh: this.generateJwt(user),
-    };
+    const tokens = this.generateTokens(user);
+
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    return tokens;
   }
 
   async oAuthLogin(user) {
@@ -66,16 +70,35 @@ export class AuthService {
     delete user.isActive;
     delete user.token;
 
-    return {
-      ...user,
-      access: this.generateJwt({ id: user.id, ...user }),
-      refresh: this.generateJwt({ id: user.id, ...user }),
-    };
+    const tokens = this.generateTokens({ id: user.id, ...user });
+
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    return tokens;
   }
 
-  private generateJwt(payload: JwtPayload) {
-    const token = this.jwtService.sign(payload);
+  async logout(userId: string) {
+    return await this.usersService.update(userId, { refreshToken: null });
+  }
 
-    return token;
+  async updateRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = hashSync(refreshToken, 10);
+
+    await this.usersService.update(userId, {
+      refreshToken: hashedRefreshToken,
+    });
+  }
+
+  private generateTokens(payload: JwtPayload) {
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+      expiresIn: '15m',
+    });
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: '7d',
+    });
+
+    return { accessToken, refreshToken };
   }
 }

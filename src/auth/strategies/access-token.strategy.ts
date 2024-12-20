@@ -9,20 +9,20 @@ import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 
 // Helpers
-import { getUserRolesAndPermissions } from '../../users/helpers/get-user-roles-and-permissions';
+import { getUserRolesAndPermissions } from 'src/users/helpers/get-user-roles-and-permissions';
 
 // Types
 import type { JwtPayload, UserResponse } from '../interfaces';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     configService: ConfigService,
   ) {
     super({
-      secretOrKey: configService.get('JWT_SECRET'),
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: configService.get('JWT_ACCESS_SECRET'),
     });
   }
 

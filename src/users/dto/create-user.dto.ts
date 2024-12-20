@@ -33,4 +33,8 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   provider: string;
+
+  @IsOptional()
+  @IsString()
+  refreshToken: string;
 }

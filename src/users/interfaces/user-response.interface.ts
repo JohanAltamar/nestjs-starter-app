@@ -7,4 +7,5 @@ export interface UserResponse
   > {
   roles: string[];
   permissions: string[];
+  refreshToken?: string;
 }
