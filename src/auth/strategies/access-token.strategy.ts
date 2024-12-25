@@ -6,7 +6,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Repository } from 'typeorm';
 
 // Entities
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/common/entities/user.entity';
 
 // Helpers
 import { getUserRolesAndPermissions } from 'src/users/helpers/get-user-roles-and-permissions';

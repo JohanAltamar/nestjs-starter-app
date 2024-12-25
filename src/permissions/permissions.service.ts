@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { validate as isUUID } from 'uuid';
 
 // DTOs
 import { PaginationDto } from 'src/common/dto/pagination.dto';
@@ -41,16 +42,32 @@ export class PermissionsService {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+    const { limit = 20, offset = 0 } = paginationDto;
 
-    return await this.permissionRepository.find({ skip: offset, take: limit });
+    return await this.permissionRepository.find({
+      skip: offset,
+      take: limit,
+      order: { name: 'asc' },
+    });
   }
 
-  async findOne(id: string) {
-    const permission = await this.permissionRepository.findOneBy({ id });
+  async findOne(term: string) {
+    let permission: Permission;
+
+    if (isUUID(term)) {
+      permission = await this.permissionRepository.findOne({
+        where: { id: term },
+        select: { name: true, id: true },
+      });
+    } else {
+      permission = await this.permissionRepository.findOne({
+        where: { name: term },
+        select: { name: true, id: true },
+      });
+    }
 
     if (!permission)
-      throw new NotFoundException(`Permission with "${id}" not found`);
+      throw new NotFoundException(`Permission with "${term}" not found`);
 
     return permission;
   }

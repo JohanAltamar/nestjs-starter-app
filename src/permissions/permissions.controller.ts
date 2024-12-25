@@ -40,10 +40,10 @@ export class PermissionsController {
     return this.permissionsService.findAll(paginationDto);
   }
 
-  @Get(':id')
+  @Get(':term')
   @Auth('permission', ValidPermissions.view_permissions)
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.permissionsService.findOne(id);
+  findOne(@Param('term') term: string) {
+    return this.permissionsService.findOne(term);
   }
 
   @Patch(':id')

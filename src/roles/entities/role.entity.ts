@@ -9,7 +9,7 @@ import {
 
 // Entities
 import { Permission } from 'src/permissions/entities/permission.entity';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/common/entities/user.entity';
 
 @Entity({ name: 'roles' })
 export class Role {
@@ -36,6 +36,6 @@ export class Role {
 
   @BeforeInsert()
   beforeInsertRole() {
-    this.name = this.name.toUpperCase();
+    this.name = this.name.replaceAll(' ', '_').toUpperCase();
   }
 }

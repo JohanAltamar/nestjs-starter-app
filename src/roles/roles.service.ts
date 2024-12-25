@@ -56,7 +56,7 @@ export class RolesService {
   }
 
   async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
+    const { limit = 20, offset = 0 } = paginationDto;
     const roles = await this.roleRepository.find({
       skip: offset,
       take: limit,
@@ -103,7 +103,7 @@ export class RolesService {
     if (!roleToUpdate)
       throw new NotFoundException(`Role with id ${id} not found`);
 
-    if (permissions.length > 0) {
+    if (permissions?.length > 0) {
       const newPermissions = await Promise.all(
         permissions.map((permission) =>
           this.permissionsService.findOne(permission),

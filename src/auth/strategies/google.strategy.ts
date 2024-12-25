@@ -6,10 +6,10 @@ import { Strategy, VerifyCallback } from 'passport-google-oauth2';
 import { Repository } from 'typeorm';
 
 // Entities
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/common/entities/user.entity';
 
 // Helpers
-import { getUserRolesAndPermissions } from '../../users/helpers/get-user-roles-and-permissions';
+import { getUserRolesAndPermissions } from 'src/users/helpers/get-user-roles-and-permissions';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
