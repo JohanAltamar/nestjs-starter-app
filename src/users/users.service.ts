@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -181,6 +182,22 @@ export class UsersService {
     await this.update(userId, {
       refreshToken: hashedRefreshToken,
     });
+  }
+
+  async refreshTokens(userId: string, refreshToken: string) {
+    const user = await this.findOne(userId);
+    if (!user || !user.refreshToken)
+      throw new ForbiddenException('Access Denied');
+
+    const refreshTokenMatches = compareSync(refreshToken, user.refreshToken);
+
+    if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
+
+    const tokens = this.authService.generateTokens(user);
+
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    return tokens;
   }
 
   private handleDBExceptions = (error) => {

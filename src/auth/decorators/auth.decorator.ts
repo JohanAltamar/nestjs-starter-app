@@ -11,7 +11,7 @@ import { UserPermissionGuard, UserRoleGuard } from '../guards';
 import { ValidPermissions, ValidRoles } from '../interfaces';
 
 export const Auth = (
-  protectedBy?: 'role' | 'permission',
+  protectedBy?: 'role' | 'permission' | 'refresh-token',
   ...features: ValidRoles[] | ValidPermissions[]
 ) => {
   if (protectedBy === 'permission') {
@@ -19,13 +19,13 @@ export const Auth = (
       PermissionProtected(...(features as ValidPermissions[])),
       UseGuards(AuthGuard(), UserPermissionGuard, UserRoleGuard),
     );
-  }
-
-  if (protectedBy === 'role') {
+  } else if (protectedBy === 'role') {
     return applyDecorators(
       RoleProtected(...(features as ValidRoles[])),
       UseGuards(AuthGuard(), UserPermissionGuard, UserRoleGuard),
     );
+  } else if (protectedBy === 'refresh-token') {
+    return applyDecorators(UseGuards(AuthGuard('jwt-refresh')));
   }
 
   return applyDecorators(UseGuards(AuthGuard()));

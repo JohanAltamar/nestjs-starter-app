@@ -55,6 +55,15 @@ export class UsersController {
     return this.usersService.logout(id);
   }
 
+  @Get('refresh')
+  @Auth('refresh-token')
+  refreshTokens(
+    @GetUser('id', ParseUUIDPipe) id: string,
+    @GetUser('refreshToken') refreshToken: string,
+  ) {
+    return this.usersService.refreshTokens(id, refreshToken);
+  }
+
   @Get('google/callback')
   @UseGuards(GoogleOauthGuard)
   async googleAuthCallback(@Req() req, @Res() res: Response) {
