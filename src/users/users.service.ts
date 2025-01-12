@@ -11,13 +11,18 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../common/entities/user.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { RolesService } from 'src/roles/roles.service';
 import { compareSync, hashSync } from 'bcrypt';
 import { getUserRolesAndPermissions } from './helpers/get-user-roles-and-permissions';
 import { AuthService } from '../auth/auth.service';
 import { LoginUserDto } from 'src/auth/dto';
+import { validate as isUUID } from 'uuid';
+import { PaginatedSearchByNameDto } from './dto/paginated-search-by-name.dto';
+import { RecoverPasswordDto } from './dto/recover-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
+// TODO: order imports
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger('AuthService');
@@ -64,23 +69,44 @@ export class UsersService {
     }
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(paginationDto: PaginatedSearchByNameDto) {
+    const { limit = 20, offset = 0, name } = paginationDto;
+
+    return await this.userRepository.find({
+      where: { fullName: Like(`%${name.toLowerCase()}%`) },
+      skip: offset,
+      take: limit,
+      order: { fullName: 'asc' },
+    });
   }
 
-  async findOne(id: string) {
-    const user = await this.userRepository.findOne({
-      where: { id },
-      select: {
-        email: true,
-        id: true,
-        fullName: true,
-        isActive: true,
-        refreshToken: true,
-      },
-    });
+  async findOne(term: string) {
+    let user: User;
+    if (isUUID(term)) {
+      user = await this.userRepository.findOne({
+        where: { id: term },
+        select: {
+          email: true,
+          id: true,
+          fullName: true,
+          isActive: true,
+          refreshToken: true,
+        },
+      });
+    } else {
+      user = await this.userRepository.findOne({
+        where: { fullName: term },
+        select: {
+          email: true,
+          id: true,
+          fullName: true,
+          isActive: true,
+          refreshToken: true,
+        },
+      });
+    }
 
-    if (!user) throw new NotFoundException(`User with id ${id} not found`);
+    if (!user) throw new NotFoundException(`User with id ${term} not found`);
 
     return { ...user, ...getUserRolesAndPermissions(user) };
   }
@@ -88,7 +114,13 @@ export class UsersService {
   async findOneByEmail(email: string) {
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { password: true, email: true, id: true, fullName: true },
+      select: {
+        password: true,
+        email: true,
+        id: true,
+        fullName: true,
+        isActive: true,
+      },
     });
 
     if (!user)
@@ -115,13 +147,21 @@ export class UsersService {
       userToUpdate.roles = newRoles;
     }
 
-    await this.userRepository.save(userToUpdate);
+    try {
+      await this.userRepository.save(userToUpdate);
 
-    return await this.findOne(userToUpdate.id);
+      return await this.findOne(userToUpdate.id);
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} user`;
+  async activate(id: string) {
+    return await this.update(id, { isActive: true });
+  }
+
+  async deactivate(id: string) {
+    return await this.update(id, { isActive: false });
   }
 
   async createUser(createUserDto: CreateUserDto, fromProvider: boolean) {
@@ -139,6 +179,11 @@ export class UsersService {
     const user = await this.findOneByEmail(email);
 
     if (!user) throw new UnauthorizedException('Credentials not valid (email)');
+
+    if (!user.isActive)
+      throw new UnauthorizedException(
+        'User is inactive, contact the app admin',
+      );
 
     if (!compareSync(password, user.password))
       throw new UnauthorizedException('Credentials not valid (password)');
@@ -162,6 +207,11 @@ export class UsersService {
       user = { ...user, ...newUser };
     }
 
+    if (!user.isActive)
+      throw new UnauthorizedException(
+        'User is inactive, contact the app admin',
+      );
+
     delete user.isActive;
     delete user.token;
 
@@ -174,6 +224,46 @@ export class UsersService {
 
   async logout(userId: string) {
     return await this.update(userId, { refreshToken: null });
+  }
+
+  async recoverPassword(recoverPasswordDto: RecoverPasswordDto) {
+    const { email } = recoverPasswordDto;
+
+    const user = await this.findOneByEmail(email);
+
+    if (!user.isActive)
+      throw new UnauthorizedException(
+        'User is inactive, contact the app admin',
+      );
+
+    delete user.isActive;
+
+    return this.authService.generatePasswordRecoveryToken(user.email);
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { password, token } = resetPasswordDto;
+
+    const { email, ok } = this.authService.decodePasswordRecoveryToken(token);
+
+    if (!ok) {
+      throw new UnauthorizedException('Token expired, get a new one');
+    }
+
+    const user = await this.findOneByEmail(email);
+
+    if (!user.isActive)
+      throw new UnauthorizedException(
+        'User is inactive, contact the app admin',
+      );
+
+    await this.update(user.id, {
+      ...user,
+      password: hashSync(password, 10),
+      refreshToken: null,
+    });
+
+    return { message: 'Password reset successfully' };
   }
 
   async updateRefreshToken(userId: string, refreshToken: string) {

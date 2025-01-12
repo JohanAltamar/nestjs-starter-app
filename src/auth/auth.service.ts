@@ -26,4 +26,29 @@ export class AuthService {
 
     return { accessToken, refreshToken };
   }
+
+  generatePasswordRecoveryToken(email: string) {
+    const token = this.jwtService.sign(
+      { email },
+      {
+        secret: this.configService.get<string>('JWT_PASSWORD_RECOVERY_SECRET'),
+        expiresIn: '15m',
+      },
+    );
+
+    return { token };
+  }
+
+  decodePasswordRecoveryToken(token: string) {
+    try {
+      const { email } = this.jwtService.verify<{ email: string }>(token, {
+        secret: this.configService.get<string>('JWT_PASSWORD_RECOVERY_SECRET'),
+      });
+
+      return { email, ok: true };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_) {
+      return { ok: false };
+    }
+  }
 }

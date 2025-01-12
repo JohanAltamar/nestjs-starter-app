@@ -7,6 +7,7 @@ export enum ValidPermissions {
   delete_roles = 'DELETE_ROLES',
   delete_users = 'DELETE_USERS',
   edit_training_sessions = 'EDIT_TRAINING_SESSIONS',
+  edit_users = 'EDIT_USERS',
   edit_users_sys_admin = 'EDIT_USERS_SYS_ADMIN',
   update_permissions = 'UPDATE_PERMISSIONS',
   update_roles = 'UPDATE_ROLES',

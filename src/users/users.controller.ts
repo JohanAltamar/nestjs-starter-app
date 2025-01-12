@@ -10,6 +10,7 @@ import {
   UseGuards,
   Req,
   Res,
+  Query,
 } from '@nestjs/common';
 
 // Decorators
@@ -19,9 +20,7 @@ import { Auth, GetUser } from 'src/auth/decorators';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto';
-
-// Entities
-import { User } from 'src/common/entities/user.entity';
+import { PaginatedSearchByNameDto } from './dto/paginated-search-by-name.dto';
 
 // Providers
 import { UsersService } from './users.service';
@@ -31,6 +30,8 @@ import { ValidPermissions } from 'src/auth/interfaces';
 import { GoogleOauthGuard } from 'src/auth/guards';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { RecoverPasswordDto } from './dto/recover-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -47,6 +48,16 @@ export class UsersController {
   @Post('login')
   loginUser(@Body() loginUserDto: LoginUserDto) {
     return this.usersService.loginUser(loginUserDto);
+  }
+
+  @Post('recover-password')
+  recoverPassword(@Body() recoverPasswordDto: RecoverPasswordDto) {
+    return this.usersService.recoverPassword(recoverPasswordDto);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.usersService.resetPassword(resetPasswordDto);
   }
 
   @Get('logout')
@@ -87,33 +98,34 @@ export class UsersController {
 
   @Get()
   @Auth('permission', ValidPermissions.view_users)
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() paginationDto: PaginatedSearchByNameDto) {
+    return this.usersService.findAll(paginationDto);
   }
 
-  @Get(':id')
+  @Get(':term')
   @Auth('permission', ValidPermissions.view_users)
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usersService.findOne(id);
+  findOne(@Param('term') term: string) {
+    return this.usersService.findOne(term);
   }
 
   @Patch(':id')
-  @Auth()
+  @Auth('permission', ValidPermissions.edit_users)
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @GetUser() user: User,
   ) {
-    // TODO: check if the user has the permission or it is the same user
-    console.log(user);
     return this.usersService.update(id, updateUserDto);
   }
 
+  // To toggle user state use the 2 endpoints
+  @Post(':id')
+  @Auth('permission', ValidPermissions.edit_users)
+  activate(@Param('id', ParseUUIDPipe) id: string) {
+    return this.usersService.activate(id);
+  }
   @Delete(':id')
-  @Auth()
-  remove(@Param('id', ParseUUIDPipe) id: string, @GetUser() user: User) {
-    // TODO: check if the user has the permission or it is the same user
-    console.log(user);
-    return this.usersService.remove(id);
+  @Auth('permission', ValidPermissions.edit_users)
+  deactivate(@Param('id', ParseUUIDPipe) id: string) {
+    return this.usersService.deactivate(id);
   }
 }
